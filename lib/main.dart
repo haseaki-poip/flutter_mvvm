@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mvvm_training/my_widget_1.dart';
+import 'package:mvvm_training/pages/loading_page.dart';
 import 'package:mvvm_training/pages/todo_list_page.dart';
 
 void main() {
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      home: const TodoListPage(),
+      home: const LoadingPage(),
     );
   }
 }
