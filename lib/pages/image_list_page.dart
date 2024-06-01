@@ -1,50 +1,49 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mvvm_training/pages/image_add_page.dart';
+import 'package:mvvm_training/state/memory_notifier.dart';
 
 class ImageListPage extends ConsumerWidget {
   const ImageListPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    List<String> numberList = [
-      '1',
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      '10'
-    ];
+    final asyncMemories = ref.watch(memoryNotifierProvider);
+    final imageGridView = switch (asyncMemories) {
+      AsyncData(:final value) => GridView(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 5,
+            crossAxisSpacing: 5,
+          ),
+          children: [
+            for (int index = 0; index < value.length; index++)
+              Container(
+                child: Image.file(
+                  File(value[index].imagePath),
+                  fit: BoxFit.cover,
+                ),
+              ),
+          ],
+        ),
+      AsyncError(:final error) => Text('Error: $error'),
+      _ => const Center(child: CircularProgressIndicator()),
+    };
 
     return Scaffold(
-      body: GridView.builder(
-        itemCount: numberList.length,
-        itemBuilder: (context, index) {
-          return Container(
-            color: Colors.pink,
-            child: Center(child: Text(numberList[index])),
-          );
-        },
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 5,
-          crossAxisSpacing: 5,
-          // childAspectRatio: 2.0,
-        ),
-      ),
+      body: imageGridView,
       floatingActionButton: SizedBox(
         width: 72.0,
         height: 72.0,
         child: FloatingActionButton(
           shape: const CircleBorder(),
           onPressed: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => AddTodoPage()),
-            // );
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ImageAddPage()),
+            );
           },
           tooltip: 'add image',
           backgroundColor: Colors.blue, // 色を指定

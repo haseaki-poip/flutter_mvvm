@@ -33,6 +33,7 @@ dependencies:
   shared_preferences:
   flutter_hooks:
   flutter_riverpod:
+  hooks_riverpod:
   riverpod_annotation:
   freezed_annotation:
   json_annotation:
