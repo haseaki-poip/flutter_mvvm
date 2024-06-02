@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mvvm_training/pages/image_add_page.dart';
+import 'package:mvvm_training/pages/add_memory_page.dart';
 import 'package:mvvm_training/state/memory_notifier.dart';
 
 class ImageListPage extends ConsumerWidget {
@@ -42,7 +42,7 @@ class ImageListPage extends ConsumerWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ImageAddPage()),
+              MaterialPageRoute(builder: (context) => const AddMemoryPage()),
             );
           },
           tooltip: 'add image',
