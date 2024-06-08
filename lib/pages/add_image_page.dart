@@ -22,7 +22,7 @@ class AddImagePage extends HookWidget {
     final localPhotos = useState<List<AssetEntity>>([]);
     final thumbnailFutures =
         useState<Map<int, Future<Uint8List?>>>(<int, Future<Uint8List?>>{});
-    final selectedPhoto = useState<AssetEntity?>(null);
+    final selectedPhotoIndex = useState<int>(0);
 
     void setLocalPhotos() async {
       try {
@@ -42,11 +42,9 @@ class AddImagePage extends HookWidget {
         final Map<int, Future<Uint8List?>> futures = {};
         for (int i = 0; i < images.length; i++) {
           futures[i] =
-              images[i].thumbnailDataWithSize(const ThumbnailSize(200, 200));
+              images[i].thumbnailDataWithSize(const ThumbnailSize(600, 600));
         }
         thumbnailFutures.value = futures;
-
-        selectedPhoto.value = images[0];
       } catch (e) {
         return;
       }
@@ -67,39 +65,65 @@ class AddImagePage extends HookWidget {
       return null;
     }, []);
 
-    // futureオブジェクトはFutureBuilderの外で生成する。
-    // useMemoizedは適切なタイミングでしか、実行されないため、不要なfutureオブジェクトの再生成を行わない
-    // FutureBuilderの中で生成すると不要な再生成がされる
-    final selectedPhotoFuture = useMemoized(() {
-      return selectedPhoto.value
-          ?.thumbnailDataWithSize(const ThumbnailSize(600, 600));
-    }, [selectedPhoto.value]);
-
     return Scaffold(
-      appBar: AppBar(title: Text('画像選択')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        title: Center(child: Text('画像選択')),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final selectedImage = localPhotos.value[selectedPhotoIndex.value];
+              final filePath =
+                  await selectedImage.file.then((file) => file?.path);
+              if (filePath == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('画像の取得に失敗しました'),
+                  ),
+                );
+                return;
+              }
+
+              // 文章入力ページに遷移
+            },
+            child: const Text(
+              '次へ',
+              style: TextStyle(
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
       body: Column(
         children: [
-          if (selectedPhoto.value != null)
-            FutureBuilder<Uint8List?>(
-              future: selectedPhotoFuture,
-              builder: (context, snapshot) {
-                final bytes = snapshot.data;
-                if (bytes == null) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                return Container(
-                  width: double.infinity,
-                  height: MediaQuery.of(context).size.height * 4 / 7,
-                  child: Image.memory(bytes, fit: BoxFit.cover),
-                );
-              },
-            ),
+          // if (thumbnailFutures.value[selectedPhotoIndex] != null)
+          FutureBuilder<Uint8List?>(
+            future: thumbnailFutures.value[selectedPhotoIndex.value],
+            builder: (context, snapshot) {
+              final bytes = snapshot.data;
+              if (bytes == null) {
+                return Center(child: CircularProgressIndicator());
+              }
+              return Container(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height * 4 / 7,
+                child: Image.memory(bytes, fit: BoxFit.cover),
+              );
+            },
+          ),
           Expanded(
             child: Padding(
               padding:
                   const EdgeInsets.only(top: 10.0), // Add padding to the top
               child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   mainAxisSpacing: 5,
                   crossAxisSpacing: 5,
@@ -112,13 +136,24 @@ class AddImagePage extends HookWidget {
                     builder: (context, snapshot) {
                       final bytes = snapshot.data;
                       if (bytes == null) {
-                        return Center(child: CircularProgressIndicator());
+                        return const Center(child: CircularProgressIndicator());
                       }
                       return GestureDetector(
                         onTap: () {
-                          selectedPhoto.value = localPhotos.value[index];
+                          selectedPhotoIndex.value = index;
                         },
-                        child: Image.memory(bytes, fit: BoxFit.cover),
+                        child: Stack(
+                          children: [
+                            AspectRatio(
+                              aspectRatio: 1.0,
+                              child: Image.memory(bytes, fit: BoxFit.cover),
+                            ),
+                            if (index == selectedPhotoIndex.value)
+                              Container(
+                                color: Colors.white.withOpacity(0.5),
+                              ),
+                          ],
+                        ),
                       );
                     },
                   );
