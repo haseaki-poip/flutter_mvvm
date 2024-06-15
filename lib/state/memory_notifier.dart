@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'memory_notifier.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class MemoryNotifier extends _$MemoryNotifier {
   @override
   Future<List<MemoryModel>> build() async {

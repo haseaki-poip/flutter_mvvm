@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:mvvm_training/pages/add_text_page.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AddImagePage extends HookWidget {
@@ -78,9 +79,11 @@ class AddImagePage extends HookWidget {
           TextButton(
             onPressed: () async {
               final selectedImage = localPhotos.value[selectedPhotoIndex.value];
-              final filePath =
+              final selecterFutureImage =
+                  thumbnailFutures.value[selectedPhotoIndex.value];
+              final imagePath =
                   await selectedImage.file.then((file) => file?.path);
-              if (filePath == null) {
+              if (imagePath == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('画像の取得に失敗しました'),
@@ -89,7 +92,13 @@ class AddImagePage extends HookWidget {
                 return;
               }
 
-              // 文章入力ページに遷移
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddTextPage(
+                      imagePath: imagePath, imageFuture: selecterFutureImage),
+                ),
+              );
             },
             child: const Text(
               '次へ',
